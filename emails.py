@@ -1,3 +1,12 @@
+# GMAIL APP PASSWORD SETUP GUIDE
+# - Go to myaccount.google.com
+# - Enable 2 Factor Authentication first
+# - Go to Security -> App Passwords
+# - Select app: Mail, device: Windows
+# - Copy the 16 character password
+# - Add to .env as CB_EMAIL_PWD=xxxx xxxx xxxx xxxx
+# - Never use actual Gmail password, only app password works with SMTP
+
 import smtplib
 import ssl
 from email.message import EmailMessage
@@ -6,7 +15,7 @@ import mimetypes
 import os
 from dotenv import load_dotenv
 
-_ = load_dotenv()
+_ = load_dotenv(os.path.abspath(os.path.join(os.path.dirname(__file__), '.env')))
 
 class EmailSender:
     def __init__(

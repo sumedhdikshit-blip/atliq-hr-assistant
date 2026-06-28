@@ -3,11 +3,11 @@ from hrms import *
 from typing import List, Dict, Optional
 from mcp.server.fastmcp import FastMCP
 
+import os
 # load the env
 from dotenv import load_dotenv
-load_dotenv()
-
-import os
+load_dotenv(os.path.abspath(os.path.join(os.path.dirname(__file__), '.env')))
+from datetime import datetime, timedelta
 from utils import seed_services
 
 employee_manager = EmployeeManager()
@@ -175,20 +175,115 @@ def get_leave_history(emp_id: str) -> str:
     return leave_manager.get_leave_history(emp_id)
 
 
-@mcp.prompt("onboard_new_employee")
-def onboard_new_employee(employee_name: str, manager_name: str):
-    return f"""Onboard a new employee with the following details:
-    - Name: {employee_name}
-    - Manager Name: {manager_name}
-    Steps to follow:
-    - Add the employee to the HRMS system.
-    - Send a welcome email to the employee with their login credentials. (Format: employee_name@atliq.com)
-    - Notify the manager about the new employee's onboarding.
-    - Raise tickets for a new laptop, id card, and other necessary equipment.
-    - Schedule an introductory meeting between the employee and the manager.
-    """
+@mcp.tool()
+def send_welcome_email(emp_id: str) -> str:
+    emp = employee_manager.get_employee_details(emp_id)
+    manager_str = employee_manager.get_manager(emp_id)
+    html_body = f"<h1>Welcome to AtliQ, {emp['name']}!</h1><p>Your Employee ID is <b>{emp_id}</b>.</p><p>Your Manager is <b>{manager_str}</b>.</p><p>Company email format is first.last@atliq.com.</p>"
+    emailer.send_email(f"Welcome to AtliQ, {emp['name']}!", html_body, [emp['email']], html=True)
+    return f"Welcome email sent to {emp['name']}."
 
+@mcp.tool()
+def send_manager_notification(emp_id: str) -> str:
+    emp = employee_manager.get_employee_details(emp_id)
+    mgr_id = employee_manager.manager_map.get(emp_id)
+    if not mgr_id:
+        return "No manager to notify."
+    mgr = employee_manager.get_employee_details(mgr_id)
+    body = f"Hi {mgr['name']},\n\nNew team member {emp['name']} (ID: {emp_id}) has joined today.\n\nThanks,\nHR Team"
+    emailer.send_email("New Team Member Joined", body, [mgr['email']])
+    return f"Manager notification sent to {mgr['name']}."
 
+@mcp.tool()
+def send_ticket_update_email(ticket_id: str) -> str:
+    t_details = next((t for t in ticket_manager.tickets if t["ticket_id"] == ticket_id), None)
+    if not t_details:
+        raise ValueError(f"Ticket {ticket_id} not found.")
+    emp = employee_manager.get_employee_details(t_details["emp_id"])
+    body = f"Your ticket {ticket_id} for '{t_details['item']}' is now {t_details['status']}."
+    emailer.send_email(f"Ticket {ticket_id} Update", body, [emp['email']])
+    return f"Ticket update email sent to {emp['name']}."
+
+@mcp.tool()
+def onboard_employee(emp_name: str, manager_id: str, email: str) -> str:
+    summary = []
+    try:
+        emp_id = employee_manager.get_next_emp_id()
+        add_employee(emp_name, manager_id, email)
+        summary.append(f"Step 1: Added employee {emp_name} ({emp_id}) - SUCCESS")
+    except Exception as e:
+        summary.append(f"Step 1: Add employee - FAILED: {str(e)}")
+        return "\n".join(summary)
+        
+    try:
+        send_welcome_email(emp_id)
+        summary.append("Step 2: Welcome email - SUCCESS")
+    except Exception as e:
+        summary.append(f"Step 2: Welcome email - FAILED: {str(e)}")
+        
+    try:
+        send_manager_notification(emp_id)
+        summary.append("Step 3: Manager notification - SUCCESS")
+    except Exception as e:
+        summary.append(f"Step 3: Manager notification - FAILED: {str(e)}")
+        
+    try:
+        create_ticket(emp_id, "Laptop", "New hire onboarding")
+        create_ticket(emp_id, "ID Card", "New hire onboarding")
+        create_ticket(emp_id, "Access Card", "New hire onboarding")
+        summary.append("Step 4: Created tickets - SUCCESS")
+    except Exception as e:
+        summary.append(f"Step 4: Created tickets - FAILED: {str(e)}")
+        
+    try:
+        now = datetime.now()
+        days_ahead = 1 if now.weekday() < 4 else (3 if now.weekday() == 4 else (2 if now.weekday() == 5 else 1))
+        next_day = now + timedelta(days=days_ahead)
+        meeting_dt = datetime(next_day.year, next_day.month, next_day.day, 10, 0)
+        schedule_meeting(emp_id, meeting_dt, "Introductory Meeting")
+        summary.append("Step 5: Scheduled intro meeting - SUCCESS")
+    except Exception as e:
+        summary.append(f"Step 5: Scheduled intro meeting - FAILED: {str(e)}")
+        
+    return "\n".join(summary)
+
+@mcp.tool()
+def get_ticket_details(ticket_id: str) -> dict:
+    t_details = next((t for t in ticket_manager.tickets if t["ticket_id"] == ticket_id), None)
+    if not t_details:
+        raise ValueError(f"Ticket {ticket_id} not found.")
+    return t_details
+
+@mcp.tool()
+def list_all_tickets(status: str = None) -> str:
+    tickets = ticket_manager.list_tickets(status=status)
+    if not tickets:
+        return "No tickets found."
+    from collections import defaultdict
+    grouped = defaultdict(list)
+    for t in tickets:
+        grouped[t["emp_id"]].append(t)
+    out = []
+    for emp_id, emp_tickets in grouped.items():
+        out.append(f"Employee {emp_id}:")
+        for t in emp_tickets:
+            out.append(f"  - {t['ticket_id']}: {t['item']} ({t['status']})")
+    return "\n".join(out)
+
+@mcp.tool()
+def close_resolved_tickets(emp_id: str) -> str:
+    tickets = ticket_manager.list_tickets(employee_id=emp_id, status="In Progress")
+    closed = []
+    for t in tickets:
+        update_ticket_status(t["ticket_id"], "Closed")
+        try:
+            send_ticket_update_email(t["ticket_id"])
+        except Exception:
+            pass
+        closed.append(t["ticket_id"])
+    if not closed:
+        return "No In Progress tickets found to close."
+    return f"Closed {len(closed)} tickets for {emp_id}: {', '.join(closed)}"
 
 if __name__ == "__main__":
     mcp.run(transport="stdio")
