@@ -19,6 +19,90 @@
             --gradient-accent: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
             --glass-blur: blur(16px);
             --sidebar-width: 260px;
+            --skeleton-bg-start: rgba(255, 255, 255, 0.05);
+            --skeleton-bg-mid: rgba(255, 255, 255, 0.12);
+        }
+
+        /* Smooth CSS transitions for light/dark theme switching */
+        body, aside, main, div, card, table, tr, td, th, input, button, a, span, h1, h2, h3 {
+            transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+                        border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+                        color 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+                        box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Light Theme variables and class overrides */
+        body.light-theme {
+            --bg-dark: #f1f5f9;
+            --bg-sidebar: #ffffff;
+            --bg-card: rgba(255, 255, 255, 0.85);
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-color: rgba(0, 0, 0, 0.08);
+            --skeleton-bg-start: rgba(0, 0, 0, 0.04);
+            --skeleton-bg-mid: rgba(0, 0, 0, 0.10);
+        }
+
+        body.light-theme {
+            background-image: 
+                radial-gradient(circle at 10% 30%, rgba(59, 130, 246, 0.06) 0%, transparent 40%),
+                radial-gradient(circle at 90% 70%, rgba(139, 92, 246, 0.06) 0%, transparent 45%);
+        }
+
+        body.light-theme tbody tr:hover {
+            background-color: rgba(0, 0, 0, 0.015);
+        }
+
+        body.light-theme th {
+            background: rgba(0, 0, 0, 0.02);
+            color: #475569;
+        }
+
+        body.light-theme .search-box input {
+            background: rgba(255, 255, 255, 0.95);
+            color: #0f172a;
+            border-color: rgba(0,0,0,0.12);
+        }
+
+        body.light-theme .add-form input {
+            background: rgba(255, 255, 255, 0.95);
+            color: #0f172a;
+            border-color: rgba(0,0,0,0.12);
+        }
+
+        body.light-theme .chat-panel {
+            background: rgba(255, 255, 255, 0.98);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            color: #0f172a;
+        }
+
+        body.light-theme .chat-bubble-assistant {
+            background: rgba(0, 0, 0, 0.04);
+            color: #0f172a;
+            border-color: rgba(0, 0, 0, 0.06);
+        }
+
+        body.light-theme .chat-input-area input {
+            background: rgba(255, 255, 255, 0.95);
+            color: #0f172a;
+            border-color: rgba(0,0,0,0.12);
+        }
+
+        body.light-theme .chat-header {
+            background: rgba(0, 0, 0, 0.015);
+            border-bottom-color: rgba(0,0,0,0.06);
+        }
+
+        body.light-theme .chat-bubble-system {
+            background: rgba(0, 0, 0, 0.03);
+            border-color: rgba(0, 0, 0, 0.06);
+            color: #64748b;
+        }
+
+        body.light-theme .status-badge {
+            background: rgba(255, 255, 255, 0.9);
+            border-color: rgba(0, 0, 0, 0.08);
+            color: #475569;
         }
 
         * {
@@ -58,12 +142,13 @@
             bottom: 0;
             left: 0;
             z-index: 100;
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                        background-color 0.3s, border-color 0.3s;
             backdrop-filter: var(--glass-blur);
         }
 
         .sidebar-header {
-            padding: 2rem 1.5rem;
+            padding: 2rem 1.25rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -86,6 +171,12 @@
             stroke: #3b82f6;
         }
 
+        .sidebar-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
         .mobile-close-btn {
             display: none;
             background: transparent;
@@ -93,6 +184,43 @@
             color: var(--text-muted);
             font-size: 1.5rem;
             cursor: pointer;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Theme Toggle Button */
+        .theme-toggle-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            outline: none;
+        }
+
+        .theme-toggle-btn:hover {
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--primary);
+        }
+
+        body.light-theme .theme-toggle-btn {
+            background: rgba(0, 0, 0, 0.03);
+            border-color: rgba(0, 0, 0, 0.08);
+            color: var(--text-muted);
+        }
+
+        body.light-theme .theme-toggle-btn:hover {
+            background: rgba(0, 0, 0, 0.06);
+            color: var(--text-main);
         }
 
         .sidebar-nav {
@@ -127,6 +255,12 @@
             background: rgba(59, 130, 246, 0.1);
             border-left-color: #3b82f6;
             font-weight: 600;
+        }
+
+        body.light-theme .nav-item.active {
+            color: #1e40af;
+            background: rgba(59, 130, 246, 0.08);
+            border-left-color: #1d4ed8;
         }
 
         .sidebar-footer {
@@ -245,6 +379,10 @@
             color: #fff;
         }
 
+        body.light-theme .stat-value {
+            color: #0f172a;
+        }
+
         .stat-icon {
             width: 48px;
             height: 48px;
@@ -286,6 +424,13 @@
             font-weight: 600;
         }
 
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
         .tab-content {
             display: none;
             opacity: 0;
@@ -304,7 +449,7 @@
             position: relative;
             display: flex;
             align-items: center;
-            width: 280px;
+            width: 240px;
         }
 
         .search-box input {
@@ -312,11 +457,10 @@
             background: rgba(0, 0, 0, 0.3);
             border: 1px solid var(--border-color);
             color: var(--text-main);
-            padding: 0.6rem 1rem 0.6rem 2.5rem;
+            padding: 0.6rem 1rem 0.6rem 2.25rem;
             border-radius: 8px;
             font-size: 0.85rem;
             outline: none;
-            transition: all 0.2s ease;
         }
 
         .search-box input:focus {
@@ -325,11 +469,47 @@
             background: rgba(0, 0, 0, 0.5);
         }
 
+        body.light-theme .search-box input:focus {
+            background: rgba(255, 255, 255, 1);
+        }
+
         .search-icon {
             position: absolute;
-            left: 0.85rem;
+            left: 0.75rem;
             color: var(--text-muted);
             pointer-events: none;
+        }
+
+        /* Export Button */
+        button.secondary-btn {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            padding: 0.55rem 1rem;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 0.85rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            outline: none;
+        }
+
+        button.secondary-btn:hover {
+            background: rgba(255, 255, 255, 0.10);
+            border-color: var(--primary);
+        }
+
+        body.light-theme button.secondary-btn {
+            background: rgba(0, 0, 0, 0.03);
+            border-color: rgba(0, 0, 0, 0.08);
+            color: var(--text-main);
+        }
+
+        body.light-theme button.secondary-btn:hover {
+            background: rgba(0, 0, 0, 0.06);
+            border-color: var(--primary);
         }
 
         /* Table & Table Layouts */
@@ -363,7 +543,6 @@
 
         tbody tr {
             background-color: transparent;
-            transition: background-color 0.2s ease;
         }
 
         tbody tr:hover {
@@ -377,6 +556,19 @@
         td {
             font-size: 0.9rem;
             color: #e2e8f0;
+        }
+
+        body.light-theme td {
+            color: #334155;
+        }
+
+        /* Record Count Info Badges */
+        .table-footer-info {
+            margin-top: 0.75rem;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            padding-left: 0.25rem;
         }
 
         /* Circular Initials Avatars */
@@ -421,16 +613,34 @@
             border-color: rgba(59, 130, 246, 0.25);
         }
 
+        body.light-theme .badge-open {
+            background: rgba(37, 99, 235, 0.1);
+            color: #1d4ed8;
+            border-color: rgba(37, 99, 235, 0.2);
+        }
+
         .badge-closed {
             background: rgba(16, 185, 129, 0.12);
             color: #34d399;
             border-color: rgba(16, 185, 129, 0.25);
         }
 
+        body.light-theme .badge-closed {
+            background: rgba(22, 163, 74, 0.1);
+            color: #15803d;
+            border-color: rgba(22, 163, 74, 0.2);
+        }
+
         .badge-pending {
             background: rgba(245, 158, 11, 0.12);
             color: #fbbf24;
             border-color: rgba(245, 158, 11, 0.25);
+        }
+
+        body.light-theme .badge-pending {
+            background: rgba(217, 119, 6, 0.1);
+            color: #b45309;
+            border-color: rgba(217, 119, 6, 0.2);
         }
 
         /* Empty state */
@@ -470,12 +680,15 @@
             border-radius: 8px;
             font-size: 0.9rem;
             outline: none;
-            transition: all 0.2s ease;
         }
 
         .add-form input:focus {
             border-color: var(--primary);
             background: rgba(0, 0, 0, 0.5);
+        }
+
+        body.light-theme .add-form input:focus {
+            background: rgba(255, 255, 255, 1);
         }
 
         button.primary-btn {
@@ -487,13 +700,37 @@
             font-weight: 600;
             font-size: 0.9rem;
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             box-shadow: 0 4px 15px rgba(59, 130, 246, 0.25);
         }
 
         button.primary-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(59, 130, 246, 0.35);
+        }
+
+        /* Loading Skeleton */
+        @keyframes skeleton-loading {
+            0% { background-color: var(--skeleton-bg-start, rgba(255, 255, 255, 0.05)); }
+            50% { background-color: var(--skeleton-bg-mid, rgba(255, 255, 255, 0.12)); }
+            100% { background-color: var(--skeleton-bg-start, rgba(255, 255, 255, 0.05)); }
+        }
+
+        .skeleton-row td {
+            padding: 1.25rem 1rem;
+        }
+
+        .skeleton-line {
+            height: 16px;
+            border-radius: 4px;
+            animation: skeleton-loading 1.5s infinite ease-in-out;
+            width: 80%;
+        }
+
+        .skeleton-line.short {
+            width: 40%;
+        }
+        .skeleton-line.medium {
+            width: 60%;
         }
 
         /* Notification */
@@ -812,7 +1049,28 @@
                     </svg>
                     <span>AtliQ HR Hub</span>
                 </div>
-                <button class="mobile-close-btn" onclick="toggleSidebar()">&times;</button>
+                <div class="sidebar-header-actions">
+                    <!-- Theme Toggle Button -->
+                    <button class="theme-toggle-btn" id="theme-toggle-btn" onclick="toggleTheme()" aria-label="Toggle Theme">
+                        <!-- Sun Icon -->
+                        <svg class="sun-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                           <circle cx="12" cy="12" r="5"></circle>
+                           <line x1="12" y1="1" x2="12" y2="3"></line>
+                           <line x1="12" y1="21" x2="12" y2="23"></line>
+                           <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                           <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                           <line x1="1" y1="12" x2="3" y2="12"></line>
+                           <line x1="21" y1="12" x2="23" y2="12"></line>
+                           <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                           <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                        </svg>
+                        <!-- Moon Icon -->
+                        <svg class="moon-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;">
+                           <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                        </svg>
+                    </button>
+                    <button class="mobile-close-btn" onclick="toggleSidebar()">&times;</button>
+                </div>
             </div>
             
             <nav class="sidebar-nav">
@@ -927,18 +1185,29 @@
                 <div class="card">
                     <div class="card-header-area">
                         <h2 class="card-title">Employees Directory</h2>
-                        <div class="search-box">
-                            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <circle cx="11" cy="11" r="8"></circle>
-                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                            </svg>
-                            <input type="text" placeholder="Filter employees..." oninput="handleSearch('employees', this.value)">
+                        <div class="header-actions">
+                            <button class="secondary-btn" onclick="exportCSV('employees')">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="7 10 12 15 17 10"></polyline>
+                                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                                </svg>
+                                <span>Export CSV</span>
+                            </button>
+                            <div class="search-box">
+                                <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                </svg>
+                                <input type="text" placeholder="Filter employees..." oninput="handleSearch('employees', this.value)">
+                            </div>
                         </div>
                     </div>
 
                     <div class="table-container" id="employees-table">
                         <!-- Table injected by JS -->
                     </div>
+                    <div class="table-footer-info" id="employees-count">Showing 0 employees</div>
 
                     <div class="form-section">
                         <h3>Add Leave Balance</h3>
@@ -956,18 +1225,29 @@
                 <div class="card">
                     <div class="card-header-area">
                         <h2 class="card-title">Leave Balances</h2>
-                        <div class="search-box">
-                            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <circle cx="11" cy="11" r="8"></circle>
-                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                            </svg>
-                            <input type="text" placeholder="Filter leave..." oninput="handleSearch('leave', this.value)">
+                        <div class="header-actions">
+                            <button class="secondary-btn" onclick="exportCSV('leave')">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="7 10 12 15 17 10"></polyline>
+                                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                                </svg>
+                                <span>Export CSV</span>
+                            </button>
+                            <div class="search-box">
+                                <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                </svg>
+                                <input type="text" placeholder="Filter leave..." oninput="handleSearch('leave', this.value)">
+                            </div>
                         </div>
                     </div>
                     
                     <div class="table-container" id="leave-table">
                         <!-- Table injected by JS -->
                     </div>
+                    <div class="table-footer-info" id="leave-count">Showing 0 leave balances</div>
                 </div>
             </div>
 
@@ -976,18 +1256,29 @@
                 <div class="card">
                     <div class="card-header-area">
                         <h2 class="card-title">Support Tickets</h2>
-                        <div class="search-box">
-                            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <circle cx="11" cy="11" r="8"></circle>
-                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                            </svg>
-                            <input type="text" placeholder="Filter tickets..." oninput="handleSearch('tickets', this.value)">
+                        <div class="header-actions">
+                            <button class="secondary-btn" onclick="exportCSV('tickets')">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="7 10 12 15 17 10"></polyline>
+                                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                                </svg>
+                                <span>Export CSV</span>
+                            </button>
+                            <div class="search-box">
+                                <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                </svg>
+                                <input type="text" placeholder="Filter tickets..." oninput="handleSearch('tickets', this.value)">
+                            </div>
                         </div>
                     </div>
 
                     <div class="table-container" id="tickets-table">
                         <!-- Table injected by JS -->
                     </div>
+                    <div class="table-footer-info" id="tickets-count">Showing 0 tickets</div>
                 </div>
             </div>
 
@@ -996,18 +1287,29 @@
                 <div class="card">
                     <div class="card-header-area">
                         <h2 class="card-title">Scheduled Meetings</h2>
-                        <div class="search-box">
-                            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <circle cx="11" cy="11" r="8"></circle>
-                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                            </svg>
-                            <input type="text" placeholder="Filter meetings..." oninput="handleSearch('meetings', this.value)">
+                        <div class="header-actions">
+                            <button class="secondary-btn" onclick="exportCSV('meetings')">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="7 10 12 15 17 10"></polyline>
+                                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                                </svg>
+                                <span>Export CSV</span>
+                            </button>
+                            <div class="search-box">
+                                <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                </svg>
+                                <input type="text" placeholder="Filter meetings..." oninput="handleSearch('meetings', this.value)">
+                            </div>
                         </div>
                     </div>
 
                     <div class="table-container" id="meetings-table">
                         <!-- Table injected by JS -->
                     </div>
+                    <div class="table-footer-info" id="meetings-count">Showing 0 meetings</div>
                 </div>
             </div>
         </main>
@@ -1131,6 +1433,41 @@
             }, 3000);
         }
 
+        // Theme Toggle Logic
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const sunIcon = document.querySelector('.sun-icon');
+            const moonIcon = document.querySelector('.moon-icon');
+            
+            if (savedTheme === 'light' || (!savedTheme && !systemPrefersDark)) {
+                document.body.classList.add('light-theme');
+                if (sunIcon) sunIcon.style.display = 'none';
+                if (moonIcon) moonIcon.style.display = 'block';
+            } else {
+                document.body.classList.remove('light-theme');
+                if (sunIcon) sunIcon.style.display = 'block';
+                if (moonIcon) moonIcon.style.display = 'none';
+            }
+        }
+
+        function toggleTheme() {
+            const body = document.body;
+            body.classList.toggle('light-theme');
+            const isLight = body.classList.contains('light-theme');
+            localStorage.setItem('theme', isLight ? 'light' : 'dark');
+            
+            const sunIcon = document.querySelector('.sun-icon');
+            const moonIcon = document.querySelector('.moon-icon');
+            if (isLight) {
+                if (sunIcon) sunIcon.style.display = 'none';
+                if (moonIcon) moonIcon.style.display = 'block';
+            } else {
+                if (sunIcon) sunIcon.style.display = 'block';
+                if (moonIcon) moonIcon.style.display = 'none';
+            }
+        }
+
         // Get Name Initials for Avatars
         function getInitials(name) {
             if (!name) return '??';
@@ -1204,6 +1541,35 @@
             return html;
         }
 
+        // Show loading skeletons
+        function showSkeleton(type) {
+            const container = document.getElementById(`${type}-table`);
+            if (!container) return;
+            
+            let colCount = 4;
+            if (type === 'leave') colCount = 2;
+            else if (type === 'tickets') colCount = 7;
+            else if (type === 'meetings') colCount = 4;
+            
+            let html = '<table><thead><tr>';
+            for (let i = 0; i < colCount; i++) {
+                html += '<th><div class="skeleton-line short"></div></th>';
+            }
+            html += '</tr></thead><tbody>';
+            
+            for (let r = 0; r < 5; r++) {
+                html += '<tr class="skeleton-row">';
+                for (let c = 0; c < colCount; c++) {
+                    const widthClass = c % 3 === 0 ? 'short' : (c % 3 === 1 ? 'medium' : '');
+                    html += `<td><div class="skeleton-line ${widthClass}"></div></td>`;
+                }
+                html += '</tr>';
+            }
+            
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
         // Render table type with optional filter text
         function renderTable(type, filterText = '') {
             const container = document.getElementById(`${type}-table`);
@@ -1221,11 +1587,53 @@
             }
 
             container.innerHTML = generateTableHtml(data, type);
+            
+            // Update showing counts
+            const countEl = document.getElementById(`${type}-count`);
+            if (countEl) {
+                let label = 'records';
+                if (type === 'employees') label = 'employees';
+                else if (type === 'tickets') label = 'tickets';
+                else if (type === 'meetings') label = 'meetings';
+                else if (type === 'leave') label = 'leave balances';
+                countEl.textContent = `Showing ${data.length} ${label}`;
+            }
         }
 
         // Real-time table searching trigger
         function handleSearch(type, val) {
             renderTable(type, val);
+        }
+
+        // CSV Export functionality (Pure JS)
+        function exportCSV(type) {
+            const data = window.rawData[type] || [];
+            if (data.length === 0) {
+                showNotification('No data to export', 'error');
+                return;
+            }
+            
+            const headers = Object.keys(data[0]);
+            const csvRows = [headers.join(',')];
+            
+            data.forEach(row => {
+                const values = headers.map(header => {
+                    const val = row[header];
+                    const escaped = ('' + (val === null || val === undefined ? '' : val)).replace(/"/g, '\\"');
+                    return `"${escaped}"`;
+                });
+                csvRows.push(values.join(','));
+            });
+            
+            const csvContent = "data:text/csv;charset=utf-8," + csvRows.map(e => e).join("\n");
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `${type}_export_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showNotification('CSV exported successfully', 'success');
         }
 
         // Fetch Dashboard Stats and Populate cards
@@ -1248,6 +1656,9 @@
         async function fetchData() {
             try {
                 const endpoints = ['employees', 'leave', 'tickets', 'meetings'];
+                
+                // Show skeletons first
+                endpoints.forEach(ep => showSkeleton(ep));
                 
                 for (const ep of endpoints) {
                     const res = await fetch(`/api/${ep}`);
@@ -1440,7 +1851,8 @@
             scrollChatToBottom();
         }
 
-        // Initial Page setup and fetch
+        // Initialize Theme and Data on window load
+        initTheme();
         fetchData();
     </script>
 </body>

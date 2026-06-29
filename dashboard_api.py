@@ -1,3 +1,5 @@
+# D:\atliq-hr-assistant\dashboard_api.py
+# Backend API supporting visual upgrades (CSV export, Light/Dark Mode, skeletons, counts)
 import sqlite3
 import os
 import json
