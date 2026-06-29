@@ -1,0 +1,1447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AtliQ HR Hub - Assistant Dashboard</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap');
+
+        :root {
+            --bg-dark: #090d16;
+            --bg-sidebar: #0f172a;
+            --bg-card: rgba(20, 26, 46, 0.6);
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --gradient-accent: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            --glass-blur: blur(16px);
+            --sidebar-width: 260px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 30%, rgba(59, 130, 246, 0.12) 0%, transparent 40%),
+                radial-gradient(circle at 90% 70%, rgba(139, 92, 246, 0.12) 0%, transparent 45%);
+        }
+
+        /* App Layout */
+        .app-layout {
+            display: flex;
+            width: 100%;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styling */
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--bg-sidebar);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 100;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: var(--glass-blur);
+        }
+
+        .sidebar-header {
+            padding: 2rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 1.25rem;
+            background: var(--gradient-accent);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .logo svg {
+            stroke: #3b82f6;
+        }
+
+        .mobile-close-btn {
+            display: none;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .sidebar-nav {
+            padding: 2rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            flex: 1;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.85rem 1rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            border-radius: 10px;
+            transition: all 0.2s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-item:hover {
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .nav-item.active {
+            color: #fff;
+            background: rgba(59, 130, 246, 0.1);
+            border-left-color: #3b82f6;
+            font-weight: 600;
+        }
+
+        .sidebar-footer {
+            padding: 1.5rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            background: rgba(0, 0, 0, 0.3);
+            padding: 0.5rem 0.75rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #10b981;
+            border-radius: 50%;
+            box-shadow: 0 0 8px #10b981;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        /* Main Content Area */
+        .main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            padding: 2rem;
+            width: calc(100% - var(--sidebar-width));
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .top-bar {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .mobile-toggle-btn {
+            display: none;
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+
+        .page-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.75rem;
+            font-weight: 700;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.25rem;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            opacity: 0;
+            transform: translateY(15px);
+            animation: fadeInSlideUp 0.5s ease-out forwards;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+            border-color: rgba(59, 130, 246, 0.25);
+        }
+
+        .stat-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .stat-value {
+            font-size: 1.75rem;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .icon-blue { background: rgba(59, 130, 246, 0.15); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.2); }
+        .icon-orange { background: rgba(249, 115, 22, 0.15); color: #f97316; border: 1px solid rgba(249, 115, 22, 0.2); }
+        .icon-green { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); }
+        .icon-purple { background: rgba(139, 92, 246, 0.15); color: #8b5cf6; border: 1px solid rgba(139, 92, 246, 0.2); }
+
+        /* Card / Tab Content styling */
+        .card {
+            background: var(--bg-card);
+            backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--border-color);
+            border-radius: 18px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            position: relative;
+        }
+
+        .card-header-area {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.35rem;
+            font-weight: 600;
+        }
+
+        .tab-content {
+            display: none;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .tab-content.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Search input styling */
+        .search-box {
+            position: relative;
+            display: flex;
+            align-items: center;
+            width: 280px;
+        }
+
+        .search-box input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 0.6rem 1rem 0.6rem 2.5rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .search-box input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 0.85rem;
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        /* Table & Table Layouts */
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        th, td {
+            padding: 1rem 1.25rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background: rgba(0, 0, 0, 0.2);
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+        }
+
+        tbody tr {
+            background-color: transparent;
+            transition: background-color 0.2s ease;
+        }
+
+        tbody tr:hover {
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        td {
+            font-size: 0.9rem;
+            color: #e2e8f0;
+        }
+
+        /* Circular Initials Avatars */
+        .user-cell {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            color: #fff;
+            font-weight: 600;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+        }
+
+        .user-name {
+            font-weight: 500;
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.65rem;
+            border-radius: 9999px;
+            font-weight: 500;
+            font-size: 0.75rem;
+            border: 1px solid transparent;
+        }
+
+        .badge-open {
+            background: rgba(59, 130, 246, 0.12);
+            color: #60a5fa;
+            border-color: rgba(59, 130, 246, 0.25);
+        }
+
+        .badge-closed {
+            background: rgba(16, 185, 129, 0.12);
+            color: #34d399;
+            border-color: rgba(16, 185, 129, 0.25);
+        }
+
+        .badge-pending {
+            background: rgba(245, 158, 11, 0.12);
+            color: #fbbf24;
+            border-color: rgba(245, 158, 11, 0.25);
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        /* Form styling */
+        .form-section {
+            margin-top: 2.5rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .form-section h3 {
+            margin-bottom: 1.25rem;
+            font-size: 1.15rem;
+            font-weight: 600;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .add-form {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .add-form input {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .add-form input:focus {
+            border-color: var(--primary);
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        button.primary-btn {
+            background: var(--gradient-accent);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.25);
+        }
+
+        button.primary-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.35);
+        }
+
+        /* Notification */
+        #notification {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            color: white;
+            transform: translateX(150%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1100;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            backdrop-filter: var(--glass-blur);
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        #notification.show {
+            transform: translateX(0);
+        }
+
+        #notification.success {
+            background: rgba(16, 185, 129, 0.85);
+            border: 1px solid rgba(16, 185, 129, 0.5);
+        }
+
+        #notification.error {
+            background: rgba(239, 68, 68, 0.85);
+            border: 1px solid rgba(239, 68, 68, 0.5);
+        }
+
+        /* Animations */
+        @keyframes fadeInSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .stat-card:nth-child(1) { animation-delay: 0.05s; }
+        .stat-card:nth-child(2) { animation-delay: 0.1s; }
+        .stat-card:nth-child(3) { animation-delay: 0.15s; }
+        .stat-card:nth-child(4) { animation-delay: 0.2s; }
+
+        /* Chat Widget Styles */
+        .chat-widget-btn {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: var(--gradient-accent);
+            border: none;
+            box-shadow: 0 8px 32px rgba(59, 130, 246, 0.35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: white;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 1000;
+        }
+
+        .chat-widget-btn:hover {
+            transform: scale(1.08) rotate(5deg);
+            box-shadow: 0 10px 40px rgba(59, 130, 246, 0.45);
+        }
+
+        .chat-panel {
+            position: fixed;
+            bottom: 6rem;
+            right: 2rem;
+            width: 380px;
+            height: 520px;
+            max-width: calc(100vw - 4rem);
+            max-height: calc(100vh - 8rem);
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            box-shadow: 0 12px 48px rgba(0,0,0,0.5);
+            backdrop-filter: blur(25px);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transform: scale(0.9) translateY(20px);
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 1000;
+        }
+
+        .chat-panel.active {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .chat-header {
+            padding: 1.25rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-header-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            font-size: 1.05rem;
+        }
+
+        .chat-close-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .chat-close-btn:hover {
+            color: var(--text-main);
+        }
+
+        .chat-history {
+            flex: 1;
+            padding: 1.25rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0.85rem;
+            background: rgba(0,0,0,0.1);
+        }
+
+        .chat-bubble {
+            max-width: 85%;
+            padding: 0.75rem 1rem;
+            border-radius: 16px;
+            font-size: 0.88rem;
+            line-height: 1.45;
+            word-break: break-word;
+        }
+
+        .chat-bubble-user {
+            align-self: flex-end;
+            background: #3b82f6;
+            color: white;
+            border-bottom-right-radius: 4px;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+        }
+
+        .chat-bubble-assistant {
+            align-self: flex-start;
+            background: rgba(255, 255, 255, 0.05);
+            color: #f1f5f9;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-bottom-left-radius: 4px;
+        }
+
+        .chat-bubble-system {
+            align-self: center;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            padding: 0.3rem 0.75rem;
+            border-radius: 9999px;
+            text-align: center;
+        }
+
+        .chat-input-area {
+            padding: 1rem;
+            border-top: 1px solid var(--border-color);
+            background: rgba(0, 0, 0, 0.2);
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .chat-input-area input {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 0.75rem 1rem;
+            border-radius: 10px;
+            font-size: 0.88rem;
+            outline: none;
+        }
+
+        .chat-input-area input:focus {
+            border-color: var(--primary);
+        }
+
+        .chat-send-btn {
+            background: var(--gradient-accent);
+            border: none;
+            color: white;
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+        }
+
+        .chat-send-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        /* Typing Indicator */
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.2rem 0.5rem;
+        }
+
+        .typing-dot {
+            width: 6px;
+            height: 6px;
+            background: #94a3b8;
+            border-radius: 50%;
+            animation: typingBounce 1.4s infinite ease-in-out both;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes typingBounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1.0); }
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 1024px) {
+            .sidebar {
+                transform: translateX(calc(-1 * var(--sidebar-width)));
+            }
+
+            .sidebar.mobile-open {
+                transform: translateX(0);
+            }
+
+            .mobile-close-btn {
+                display: block;
+            }
+
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+                padding: 1.5rem;
+            }
+
+            .mobile-toggle-btn {
+                display: block;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .add-form {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .add-form input, .add-form button {
+                width: 100%;
+            }
+
+            .search-box {
+                width: 100%;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .chat-panel {
+                bottom: 0;
+                right: 0;
+                width: 100vw;
+                height: 100vh;
+                max-width: 100vw;
+                max-height: 100vh;
+                border-radius: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-layout">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                       <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                       <circle cx="9" cy="7" r="4"></circle>
+                       <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                       <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                    <span>AtliQ HR Hub</span>
+                </div>
+                <button class="mobile-close-btn" onclick="toggleSidebar()">&times;</button>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="#" id="nav-employees" class="nav-item active" onclick="event.preventDefault(); switchTab('employees')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                       <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                       <circle cx="9" cy="7" r="4"></circle>
+                    </svg>
+                    <span>Employees</span>
+                </a>
+                <a href="#" id="nav-leave" class="nav-item" onclick="event.preventDefault(); switchTab('leave')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                       <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                       <line x1="16" y1="2" x2="16" y2="6"></line>
+                       <line x1="8" y1="2" x2="8" y2="6"></line>
+                       <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                    <span>Leave Balances</span>
+                </a>
+                <a href="#" id="nav-tickets" class="nav-item" onclick="event.preventDefault(); switchTab('tickets')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                       <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                       <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                       <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                    </svg>
+                    <span>Support Tickets</span>
+                </a>
+                <a href="#" id="nav-meetings" class="nav-item" onclick="event.preventDefault(); switchTab('meetings')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                       <circle cx="12" cy="12" r="10"></circle>
+                       <polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                    <span>Scheduled Meetings</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="status-badge">
+                    <div class="status-dot"></div>
+                    <span>Refreshes in <span id="countdown">30</span>s</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Panel -->
+        <main class="main-content">
+            <!-- Header bar with Mobile hamburger -->
+            <header class="top-bar">
+                <button class="mobile-toggle-btn" onclick="toggleSidebar()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                       <line x1="3" y1="12" x2="21" y2="12"></line>
+                       <line x1="3" y1="6" x2="21" y2="6"></line>
+                       <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+                <h1 class="page-title">HR Assistant Dashboard</h1>
+            </header>
+
+            <!-- Stat Cards Component -->
+            <section class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-info">
+                        <span class="stat-label">Total Employees</span>
+                        <span class="stat-value" id="stat-total-employees">-</span>
+                    </div>
+                    <div class="stat-icon icon-blue">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                           <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                           <circle cx="9" cy="7" r="4"></circle>
+                        </svg>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-info">
+                        <span class="stat-label">Open Tickets</span>
+                        <span class="stat-value" id="stat-open-tickets">-</span>
+                    </div>
+                    <div class="stat-icon icon-orange">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                           <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-info">
+                        <span class="stat-label">Meetings Today</span>
+                        <span class="stat-value" id="stat-meetings-today">-</span>
+                    </div>
+                    <div class="stat-icon icon-green">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                           <circle cx="12" cy="12" r="10"></circle>
+                           <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-info">
+                        <span class="stat-label">Total Leave Days</span>
+                        <span class="stat-value" id="stat-total-leave">-</span>
+                    </div>
+                    <div class="stat-icon icon-purple">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                           <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                           <line x1="16" y1="2" x2="16" y2="6"></line>
+                        </svg>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Employees Directory Section -->
+            <div id="employees" class="tab-content active">
+                <div class="card">
+                    <div class="card-header-area">
+                        <h2 class="card-title">Employees Directory</h2>
+                        <div class="search-box">
+                            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            </svg>
+                            <input type="text" placeholder="Filter employees..." oninput="handleSearch('employees', this.value)">
+                        </div>
+                    </div>
+
+                    <div class="table-container" id="employees-table">
+                        <!-- Table injected by JS -->
+                    </div>
+
+                    <div class="form-section">
+                        <h3>Add Leave Balance</h3>
+                        <form class="add-form" onsubmit="addLeaveBalance(event)">
+                            <input type="text" id="emp_id" placeholder="Employee ID (e.g. E011)" required>
+                            <input type="number" id="balance" placeholder="Days" value="10" min="0" required>
+                            <button type="submit" class="primary-btn">Add Balance</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Leave Balances Section -->
+            <div id="leave" class="tab-content">
+                <div class="card">
+                    <div class="card-header-area">
+                        <h2 class="card-title">Leave Balances</h2>
+                        <div class="search-box">
+                            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            </svg>
+                            <input type="text" placeholder="Filter leave..." oninput="handleSearch('leave', this.value)">
+                        </div>
+                    </div>
+                    
+                    <div class="table-container" id="leave-table">
+                        <!-- Table injected by JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Support Tickets Section -->
+            <div id="tickets" class="tab-content">
+                <div class="card">
+                    <div class="card-header-area">
+                        <h2 class="card-title">Support Tickets</h2>
+                        <div class="search-box">
+                            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            </svg>
+                            <input type="text" placeholder="Filter tickets..." oninput="handleSearch('tickets', this.value)">
+                        </div>
+                    </div>
+
+                    <div class="table-container" id="tickets-table">
+                        <!-- Table injected by JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Meetings Section -->
+            <div id="meetings" class="tab-content">
+                <div class="card">
+                    <div class="card-header-area">
+                        <h2 class="card-title">Scheduled Meetings</h2>
+                        <div class="search-box">
+                            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            </svg>
+                            <input type="text" placeholder="Filter meetings..." oninput="handleSearch('meetings', this.value)">
+                        </div>
+                    </div>
+
+                    <div class="table-container" id="meetings-table">
+                        <!-- Table injected by JS -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="notification"></div>
+
+    <!-- Floating Chat Widget Button -->
+    <button class="chat-widget-btn" onclick="toggleChatPanel()" aria-label="Open HR Assistant Chat">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        </svg>
+    </button>
+
+    <!-- Floating Chat Panel -->
+    <div class="chat-panel" id="chat-panel">
+        <div class="chat-header">
+            <div class="chat-header-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
+                    <line x1="9" y1="9" x2="9.01" y2="9"></line>
+                    <line x1="15" y1="9" x2="15.01" y2="9"></line>
+                </svg>
+                <span>AtliQ HR Assistant</span>
+            </div>
+            <button class="chat-close-btn" onclick="toggleChatPanel()">&times;</button>
+        </div>
+        
+        <div class="chat-history" id="chat-history">
+            <!-- Messages injected here -->
+        </div>
+
+        <div class="chat-input-area">
+            <input type="text" id="chat-input" placeholder="Ask me something..." onkeydown="handleChatKey(event)">
+            <button class="chat-send-btn" onclick="sendChatMessage()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let countdown = 30;
+        let activeTab = 'employees';
+        
+        // In-memory data store for client-side search filtering
+        window.rawData = {
+            employees: [],
+            leave: [],
+            tickets: [],
+            meetings: []
+        };
+
+        // Chat History Session storage
+        let chatMessages = [];
+        try {
+            const savedChat = sessionStorage.getItem('atliq_chat_history');
+            if (savedChat) {
+                chatMessages = JSON.parse(savedChat);
+            } else {
+                chatMessages = [
+                    { role: 'assistant', content: 'Hello! I am your AI HR assistant. I can help onboard new employees, check balances, schedule meetings, or file/update support tickets. How can I help you today?' }
+                ];
+            }
+        } catch (e) {
+            chatMessages = [
+                { role: 'assistant', content: 'Hello! I am your AI HR assistant. I can help onboard new employees, check balances, schedule meetings, or file/update support tickets. How can I help you today?' }
+            ];
+        }
+
+        // Toggle Sidebar Drawer
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('mobile-open');
+        }
+
+        // Switch active tab/section
+        function switchTab(tabId) {
+            activeTab = tabId;
+            
+            document.querySelectorAll('.tab-content').forEach(el => {
+                el.classList.remove('active');
+            });
+            document.querySelectorAll('.nav-item').forEach(el => {
+                el.classList.remove('active');
+            });
+
+            const targetTab = document.getElementById(tabId);
+            const targetNav = document.getElementById(`nav-${tabId}`);
+            
+            if (targetTab) {
+                targetTab.style.display = 'block';
+                setTimeout(() => {
+                    targetTab.classList.add('active');
+                    if (targetNav) targetNav.classList.add('active');
+                    
+                    document.querySelectorAll('.tab-content:not(#' + tabId + ')').forEach(el => {
+                        el.style.display = 'none';
+                    });
+                }, 10);
+            }
+
+            // Close mobile menu if open
+            const sidebar = document.getElementById('sidebar');
+            if (sidebar.classList.contains('mobile-open')) {
+                sidebar.classList.remove('mobile-open');
+            }
+        }
+
+        // Notification system
+        function showNotification(message, type) {
+            const notif = document.getElementById('notification');
+            notif.textContent = message;
+            notif.className = `show ${type}`;
+            setTimeout(() => {
+                notif.className = '';
+            }, 3000);
+        }
+
+        // Get Name Initials for Avatars
+        function getInitials(name) {
+            if (!name) return '??';
+            const parts = name.trim().split(/\s+/);
+            if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+            return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+        }
+
+        // Generate customized premium tables
+        function generateTableHtml(data, type) {
+            if (!data || data.length === 0) {
+                return '<div class="empty-state">No records found.</div>';
+            }
+            
+            const columns = Object.keys(data[0]);
+            let html = '<table><thead><tr>';
+            
+            columns.forEach(col => {
+                html += `<th>${col.replace(/_/g, ' ')}</th>`;
+            });
+            html += '</tr></thead><tbody>';
+            
+            data.forEach((row, idx) => {
+                html += `<tr style="animation: fadeInSlideUp 0.3s ease-out forwards; animation-delay: ${idx * 0.02}s; opacity: 0; transform: translateY(8px);">`;
+                columns.forEach(col => {
+                    let val = row[col];
+                    if (val === null || val === undefined) val = '-';
+                    
+                    if (col === 'name' && type === 'employees') {
+                        const initials = getInitials(val);
+                        html += `
+                            <td>
+                                <div class="user-cell">
+                                    <div class="avatar">${initials}</div>
+                                    <span class="user-name">${val}</span>
+                                </div>
+                            </td>
+                        `;
+                    } else if (col === 'status' && type === 'tickets') {
+                        let badgeClass = 'badge-pending';
+                        if (val.toLowerCase() === 'open') badgeClass = 'badge-open';
+                        else if (val.toLowerCase() === 'closed') badgeClass = 'badge-closed';
+                        
+                        html += `<td><span class="badge ${badgeClass}">${val}</span></td>`;
+                    } else if (col === 'date' && type === 'meetings') {
+                        let formattedDate = val;
+                        try {
+                            const dt = new Date(val);
+                            if (!isNaN(dt)) {
+                                formattedDate = dt.toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' });
+                            }
+                        } catch(e){}
+                        html += `<td>${formattedDate}</td>`;
+                    } else if ((col === 'created_at' || col === 'updated_at') && type === 'tickets') {
+                        let formattedDate = val;
+                        try {
+                            const dt = new Date(val);
+                            if (!isNaN(dt)) {
+                                formattedDate = dt.toLocaleString([], { dateStyle: 'short', timeStyle: 'short' });
+                            }
+                        } catch(e){}
+                        html += `<td>${formattedDate}</td>`;
+                    } else {
+                        html += `<td>${val}</td>`;
+                    }
+                });
+                html += '</tr>';
+            });
+            
+            html += '</tbody></table>';
+            return html;
+        }
+
+        // Render table type with optional filter text
+        function renderTable(type, filterText = '') {
+            const container = document.getElementById(`${type}-table`);
+            if (!container) return;
+
+            const text = filterText.toLowerCase().trim();
+            let data = window.rawData[type] || [];
+
+            if (text) {
+                data = data.filter(row => {
+                    return Object.values(row).some(val => 
+                        val !== null && val !== undefined && String(val).toLowerCase().includes(text)
+                    );
+                });
+            }
+
+            container.innerHTML = generateTableHtml(data, type);
+        }
+
+        // Real-time table searching trigger
+        function handleSearch(type, val) {
+            renderTable(type, val);
+        }
+
+        // Fetch Dashboard Stats and Populate cards
+        async function fetchStats() {
+            try {
+                const res = await fetch('/api/stats');
+                if (res.ok) {
+                    const stats = await res.json();
+                    document.getElementById('stat-total-employees').textContent = stats.total_employees;
+                    document.getElementById('stat-open-tickets').textContent = stats.open_tickets;
+                    document.getElementById('stat-meetings-today').textContent = stats.meetings_today;
+                    document.getElementById('stat-total-leave').textContent = stats.total_leave_days;
+                }
+            } catch (err) {
+                console.error("Error fetching stats:", err);
+            }
+        }
+
+        // Fetch API endpoints
+        async function fetchData() {
+            try {
+                const endpoints = ['employees', 'leave', 'tickets', 'meetings'];
+                
+                for (const ep of endpoints) {
+                    const res = await fetch(`/api/${ep}`);
+                    if (res.ok) {
+                        const data = await res.json();
+                        window.rawData[ep] = data;
+                        renderTable(ep);
+                    }
+                }
+                
+                await fetchStats();
+                countdown = 30; // Reset countdown
+            } catch (err) {
+                console.error("Error fetching data:", err);
+            }
+        }
+
+        // Add Leave Balance Form Submission
+        async function addLeaveBalance(e) {
+            e.preventDefault();
+            const emp_id = document.getElementById('emp_id').value;
+            const balance = parseInt(document.getElementById('balance').value);
+            
+            try {
+                const res = await fetch('/api/leave/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ emp_id, balance })
+                });
+                
+                const data = await res.json();
+                
+                if (res.ok) {
+                    showNotification(data.message, 'success');
+                    document.getElementById('emp_id').value = '';
+                    fetchData(); // refresh immediately
+                } else {
+                    showNotification(data.detail || 'An error occurred', 'error');
+                }
+            } catch (err) {
+                showNotification('Network error', 'error');
+            }
+        }
+
+        // Auto Refresh Timer
+        setInterval(() => {
+            countdown--;
+            document.getElementById('countdown').textContent = countdown;
+            if (countdown <= 0) {
+                fetchData();
+            }
+        }, 1000);
+
+        // --- Chat Widget Functionality ---
+        
+        function toggleChatPanel() {
+            const panel = document.getElementById('chat-panel');
+            panel.classList.toggle('active');
+            if (panel.classList.contains('active')) {
+                renderChatHistory();
+                scrollChatToBottom();
+                document.getElementById('chat-input').focus();
+            }
+        }
+
+        function renderChatHistory() {
+            const container = document.getElementById('chat-history');
+            container.innerHTML = '';
+            
+            chatMessages.forEach(msg => {
+                if (msg.role === 'system') {
+                    const bubble = document.createElement('div');
+                    bubble.className = 'chat-bubble chat-bubble-system';
+                    bubble.textContent = msg.content;
+                    container.appendChild(bubble);
+                } else if (msg.role === 'user') {
+                    const bubble = document.createElement('div');
+                    bubble.className = 'chat-bubble chat-bubble-user';
+                    bubble.textContent = msg.content;
+                    container.appendChild(bubble);
+                } else if (msg.role === 'assistant') {
+                    // Filter out tool calls JSON strings from visual interface to keep it clean
+                    if (msg.content.trim().startsWith('[') || msg.content.trim().startsWith('{')) {
+                        return; 
+                    }
+                    const bubble = document.createElement('div');
+                    bubble.className = 'chat-bubble chat-bubble-assistant';
+                    bubble.innerHTML = formatMessageContent(msg.content);
+                    container.appendChild(bubble);
+                }
+            });
+        }
+
+        function formatMessageContent(text) {
+            // Replaces newlines with <br> and formats lists slightly
+            return text
+                .replace(/\n/g, '<br>')
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        }
+
+        function scrollChatToBottom() {
+            const container = document.getElementById('chat-history');
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function handleChatKey(e) {
+            if (e.key === 'Enter') {
+                sendChatMessage();
+            }
+        }
+
+        async function sendChatMessage() {
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+            if (!message) return;
+
+            // Add user message
+            chatMessages.push({ role: 'user', content: message });
+            input.value = '';
+            renderChatHistory();
+            scrollChatToBottom();
+            
+            // Add typing indicator
+            const historyContainer = document.getElementById('chat-history');
+            const typingBubble = document.createElement('div');
+            typingBubble.className = 'chat-bubble chat-bubble-assistant';
+            typingBubble.id = 'typing-bubble';
+            typingBubble.innerHTML = `
+                <div class="typing-indicator">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            `;
+            historyContainer.appendChild(typingBubble);
+            scrollChatToBottom();
+
+            try {
+                // Prepare history to send to backend API
+                // Keep last 10 messages for context, format appropriately
+                const historyToSend = chatMessages.slice(-10).map(m => ({
+                    role: m.role,
+                    content: m.content
+                }));
+
+                const res = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message: message,
+                        history: historyToSend
+                    })
+                });
+
+                // Remove typing indicator
+                const tb = document.getElementById('typing-bubble');
+                if (tb) tb.remove();
+
+                if (res.ok) {
+                    const data = await res.json();
+                    
+                    // Replace/sync our conversation state history
+                    // The backend returns the updated history list
+                    if (data.history) {
+                        // Keep our copy, but merge and sync the new responses
+                        chatMessages = data.history;
+                        sessionStorage.setItem('atliq_chat_history', JSON.stringify(chatMessages));
+                    }
+                    
+                    renderChatHistory();
+                    scrollChatToBottom();
+                    
+                    // Trigger a fast data refresh in case tools modified database state
+                    fetchData();
+                } else {
+                    const errData = await res.json();
+                    addAssistantMessage(`Error: ${errData.detail || 'Failed to generate response.'}`);
+                }
+            } catch (err) {
+                const tb = document.getElementById('typing-bubble');
+                if (tb) tb.remove();
+                addAssistantMessage('Network error. Failed to reach the assistant API.');
+            }
+        }
+
+        function addAssistantMessage(text) {
+            chatMessages.push({ role: 'assistant', content: text });
+            sessionStorage.setItem('atliq_chat_history', JSON.stringify(chatMessages));
+            renderChatHistory();
+            scrollChatToBottom();
+        }
+
+        // Initial Page setup and fetch
+        fetchData();
+    </script>
+</body>
+</html>
