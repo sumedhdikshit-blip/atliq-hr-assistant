@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AtliQ HR Hub - Assistant Dashboard</title>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap');
 
@@ -1032,6 +1034,351 @@
                 border-radius: 0;
             }
         }
+
+        /* Dynamic Dashboard Improvements and Custom Features */
+
+        .new-chat-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            font-size: 0.72rem;
+            font-weight: 600;
+            padding: 0.3rem 0.6rem;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            transition: all 0.2s;
+        }
+        .new-chat-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: var(--primary);
+        }
+        body.light-theme .new-chat-btn {
+            background: rgba(0, 0, 0, 0.04);
+            color: var(--text-main);
+        }
+        body.light-theme .new-chat-btn:hover {
+            background: rgba(0, 0, 0, 0.08);
+        }
+        
+        /* Charts layout styles */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .chart-card {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            height: 380px;
+        }
+        .chart-container {
+            position: relative;
+            flex: 1;
+            width: 100%;
+            height: calc(100% - 40px);
+        }
+
+        /* Toast notifications container & item styling */
+        #toast-container {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            z-index: 2500;
+            pointer-events: none;
+        }
+        .toast {
+            min-width: 280px;
+            max-width: 380px;
+            padding: 0.85rem 1.25rem;
+            border-radius: 12px;
+            color: white;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            backdrop-filter: var(--glass-blur);
+            font-weight: 500;
+            font-size: 0.88rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            pointer-events: auto;
+            transform: translateX(120%);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.25);
+        }
+        .toast.show {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        .toast.success {
+            background: rgba(16, 185, 129, 0.95);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+        }
+        .toast.error {
+            background: rgba(239, 68, 68, 0.95);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+        }
+        .toast-close {
+            background: transparent;
+            border: none;
+            color: rgba(255, 255, 255, 0.8);
+            cursor: pointer;
+            font-size: 1.1rem;
+            line-height: 1;
+            padding: 0;
+        }
+        .toast-close:hover {
+            color: white;
+        }
+
+        /* Sidebar actions and Notification bell */
+        .bell-btn {
+            position: relative;
+        }
+        .bell-badge {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 8px;
+            height: 8px;
+            background-color: #ef4444;
+            border-radius: 50%;
+            display: none;
+            box-shadow: 0 0 8px #ef4444;
+        }
+        .bell-dropdown {
+            position: absolute;
+            top: 4.5rem;
+            left: 1rem;
+            width: 280px;
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            backdrop-filter: var(--glass-blur);
+            display: none;
+            flex-direction: column;
+            z-index: 1000;
+            overflow: hidden;
+            animation: fadeInSlideUp 0.2s ease-out;
+        }
+        body.light-theme .bell-dropdown {
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .bell-dropdown-header {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .clear-all-btn {
+            background: transparent;
+            border: none;
+            color: var(--primary);
+            font-size: 0.75rem;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .clear-all-btn:hover {
+            text-decoration: underline;
+        }
+        .bell-dropdown-body {
+            max-height: 250px;
+            overflow-y: auto;
+            font-size: 0.8rem;
+        }
+        .bell-item {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 0.20rem;
+            line-height: 1.3;
+        }
+        .bell-item:last-child {
+            border-bottom: none;
+        }
+        .bell-item-time {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+        .bell-empty-state {
+            padding: 2rem;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        /* Hover effects on cards and table rows */
+        .card {
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease, border-color 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.3);
+            border-color: rgba(59, 130, 246, 0.2);
+        }
+        body.light-theme .card:hover {
+            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.08);
+        }
+        tbody tr {
+            transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+            cursor: pointer;
+        }
+        tbody tr:hover {
+            background-color: rgba(255, 255, 255, 0.04) !important;
+            transform: scale(1.005);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        body.light-theme tbody tr:hover {
+            background-color: rgba(0, 0, 0, 0.02) !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+        }
+
+        /* Loading Spinner Overlay inside Chat Panel */
+        .chat-spinner-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(4px);
+            z-index: 1010;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            border-radius: 20px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .chat-spinner-overlay.show {
+            display: flex;
+            opacity: 1;
+        }
+        .spinner {
+            width: 36px;
+            height: 36px;
+            border: 3px solid rgba(59, 130, 246, 0.2);
+            border-top-color: #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Empty State styles */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 3rem 1.5rem;
+            color: var(--text-muted);
+        }
+
+        /* Employee Profile Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(8px);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .modal-overlay.show {
+            display: flex;
+            opacity: 1;
+        }
+        .modal-content {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 85vh;
+            overflow-y: auto;
+            padding: 2.5rem;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            transform: scale(0.9);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            backdrop-filter: blur(30px);
+        }
+        .modal-overlay.show .modal-content {
+            transform: scale(1);
+        }
+        .modal-close-btn {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.75rem;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .modal-close-btn:hover {
+            color: var(--text-main);
+        }
+        .modal-tab-btn {
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid transparent;
+            color: var(--text-muted);
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .modal-tab-btn:hover {
+            color: var(--text-main);
+        }
+        .modal-tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+            font-weight: 600;
+        }
+        .modal-tab-content {
+            display: none;
+        }
+        .modal-tab-content.active {
+            display: block;
+        }
+        .modal-list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.85rem;
+        }
+        .modal-list-item:last-child {
+            border-bottom: none;
+        }
+        }
     </style>
 </head>
 <body>
@@ -1050,6 +1397,15 @@
                     <span>AtliQ HR Hub</span>
                 </div>
                 <div class="sidebar-header-actions">
+                    <!-- Notification Bell Button -->
+                    <button class="theme-toggle-btn bell-btn" id="bell-btn" onclick="toggleBellDropdown(event)" aria-label="Recent Activity">
+                        <!-- Bell Icon -->
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                           <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                           <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                        </svg>
+                        <span class="bell-badge" id="bell-badge"></span>
+                    </button>
                     <!-- Theme Toggle Button -->
                     <button class="theme-toggle-btn" id="theme-toggle-btn" onclick="toggleTheme()" aria-label="Toggle Theme">
                         <!-- Sun Icon -->
@@ -1072,9 +1428,29 @@
                     <button class="mobile-close-btn" onclick="toggleSidebar()">&times;</button>
                 </div>
             </div>
+
+            <!-- Bell Dropdown inside Sidebar -->
+            <div class="bell-dropdown" id="bell-dropdown">
+                <div class="bell-dropdown-header">
+                    <span>Recent Activity</span>
+                    <button class="clear-all-btn" onclick="clearActivityLog(event)">Clear</button>
+                </div>
+                <div class="bell-dropdown-body" id="bell-dropdown-body">
+                    <!-- Dynamic activity log -->
+                </div>
+            </div>
             
             <nav class="sidebar-nav">
-                <a href="#" id="nav-employees" class="nav-item active" onclick="event.preventDefault(); switchTab('employees')">
+                <a href="#" id="nav-overview" class="nav-item active" onclick="event.preventDefault(); switchTab('overview')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                       <rect x="3" y="3" width="7" height="9"></rect>
+                       <rect x="14" y="3" width="7" height="5"></rect>
+                       <rect x="14" y="12" width="7" height="9"></rect>
+                       <rect x="3" y="16" width="7" height="5"></rect>
+                    </svg>
+                    <span>Overview</span>
+                </a>
+                <a href="#" id="nav-employees" class="nav-item" onclick="event.preventDefault(); switchTab('employees')">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                        <circle cx="9" cy="7" r="4"></circle>
@@ -1180,8 +1556,38 @@
                 </div>
             </section>
 
+            <!-- Overview Section -->
+            <div id="overview" class="tab-content active">
+                <div class="charts-grid">
+                    <div class="card chart-card">
+                        <div class="card-header-area">
+                            <h2 class="card-title">Tickets by Status</h2>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="ticketsChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="card chart-card">
+                        <div class="card-header-area">
+                            <h2 class="card-title">Leave Balance Distribution</h2>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="leaveChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="card chart-card">
+                        <div class="card-header-area">
+                            <h2 class="card-title">Meetings Scheduled (Last 7 Days)</h2>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="meetingsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Employees Directory Section -->
-            <div id="employees" class="tab-content active">
+            <div id="employees" class="tab-content">
                 <div class="card">
                     <div class="card-header-area">
                         <h2 class="card-title">Employees Directory</h2>
@@ -1315,8 +1721,8 @@
         </main>
     </div>
 
-    <!-- Notification Toast -->
-    <div id="notification"></div>
+    <!-- Notification Toast Container -->
+    <div id="toast-container"></div>
 
     <!-- Floating Chat Widget Button -->
     <button class="chat-widget-btn" onclick="toggleChatPanel()" aria-label="Open HR Assistant Chat">
@@ -1337,7 +1743,12 @@
                 </svg>
                 <span>AtliQ HR Assistant</span>
             </div>
-            <button class="chat-close-btn" onclick="toggleChatPanel()">&times;</button>
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <button class="new-chat-btn" onclick="confirmNewChat()" title="Start New Chat">
+                    <span>+ New Chat</span>
+                </button>
+                <button class="chat-close-btn" onclick="toggleChatPanel()">&times;</button>
+            </div>
         </div>
         
         <div class="chat-history" id="chat-history">
@@ -1353,11 +1764,40 @@
                 </svg>
             </button>
         </div>
+
+        <!-- Chat loading spinner overlay -->
+        <div class="chat-spinner-overlay" id="chat-spinner-overlay">
+            <div class="spinner"></div>
+        </div>
+    </div>
+
+    <!-- Employee Profile Modal -->
+    <div class="modal-overlay" id="profile-modal" onclick="closeProfileModal()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <button class="modal-close-btn" onclick="closeProfileModal()">&times;</button>
+            <div id="modal-body">
+                <!-- Dynamically loaded profile -->
+            </div>
+        </div>
     </div>
 
     <script>
         let countdown = 30;
-        let activeTab = 'employees';
+        let activeTab = 'overview';
+        
+        let ticketsChartInstance = null;
+        let leaveChartInstance = null;
+        let meetingsChartInstance = null;
+
+        let sessionStartTime = Date.now();
+
+        // Check session refresh status every minute (refresh after 4 hours)
+        setInterval(() => {
+            const fourHoursMs = 4 * 60 * 60 * 1000;
+            if (Date.now() - sessionStartTime >= fourHoursMs) {
+                clearChatSession(true);
+            }
+        }, 60000);
         
         // In-memory data store for client-side search filtering
         window.rawData = {
@@ -1405,10 +1845,14 @@
             const targetNav = document.getElementById(`nav-${tabId}`);
             
             if (targetTab) {
-                targetTab.style.display = 'block';
+targetTab.style.display = 'block';
                 setTimeout(() => {
                     targetTab.classList.add('active');
                     if (targetNav) targetNav.classList.add('active');
+                    
+                    if (tabId === 'overview') {
+                        renderCharts();
+                    }
                     
                     document.querySelectorAll('.tab-content:not(#' + tabId + ')').forEach(el => {
                         el.style.display = 'none';
@@ -1423,14 +1867,134 @@
             }
         }
 
-        // Notification system
-        function showNotification(message, type) {
-            const notif = document.getElementById('notification');
-            notif.textContent = message;
-            notif.className = `show ${type}`;
+        // Notification toast manager (concurrent toasts)
+        function showNotification(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+            
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            const content = document.createElement('span');
+            content.textContent = message;
+            toast.appendChild(content);
+            
+            const closeBtn = document.createElement('button');
+            closeBtn.className = 'toast-close';
+            closeBtn.innerHTML = '&times;';
+            closeBtn.onclick = () => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            };
+            toast.appendChild(closeBtn);
+            
+            container.appendChild(toast);
+            
+            // Trigger animation
             setTimeout(() => {
-                notif.className = '';
+                toast.classList.add('show');
+            }, 10);
+            
+            // Auto dismiss
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.classList.remove('show');
+                    setTimeout(() => toast.remove(), 300);
+                }
             }, 3000);
+        }
+
+        // Recent Activity Tracker
+        function logActivity(tool, status, resultMsg) {
+            let actionText = '';
+            if (tool === 'onboard_employee' || tool === 'add_employee') {
+                actionText = `Employee onboarded: ${resultMsg || 'Success'}`;
+            } else if (tool === 'create_ticket') {
+                actionText = `Ticket created: ${resultMsg || 'Success'}`;
+            } else if (tool === 'update_ticket_status') {
+                actionText = `Ticket updated: ${resultMsg || 'Success'}`;
+            } else if (tool === 'apply_leave') {
+                actionText = `Leave applied: ${resultMsg || 'Success'}`;
+            } else if (tool === 'add_leave_balance') {
+                actionText = `Leave balance added: ${resultMsg || 'Success'}`;
+            } else if (tool === 'schedule_meeting') {
+                actionText = `Meeting scheduled: ${resultMsg || 'Success'}`;
+            } else if (tool === 'cancel_meeting') {
+                actionText = `Meeting cancelled: ${resultMsg || 'Success'}`;
+            } else {
+                actionText = `${tool.replace(/_/g, ' ')}: ${resultMsg || 'Success'}`;
+            }
+
+            let activities = [];
+            try {
+                activities = JSON.parse(localStorage.getItem('atliq_activities')) || [];
+            } catch (e) {
+                activities = [];
+            }
+
+            const newAct = {
+                text: actionText,
+                status: status,
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            };
+
+            activities.unshift(newAct);
+            if (activities.length > 10) {
+                activities = activities.slice(0, 10);
+            }
+
+            localStorage.setItem('atliq_activities', JSON.stringify(activities));
+            showNotification(actionText, status === 'success' ? 'success' : 'error');
+            updateBellUI();
+        }
+
+        function toggleBellDropdown(e) {
+            if (e) e.stopPropagation();
+            const dropdown = document.getElementById('bell-dropdown');
+            const isVisible = dropdown.style.display === 'flex';
+            dropdown.style.display = isVisible ? 'none' : 'flex';
+            
+            if (!isVisible) {
+                const badge = document.getElementById('bell-badge');
+                if (badge) badge.style.display = 'none';
+            }
+        }
+
+        function clearActivityLog(e) {
+            if (e) e.stopPropagation();
+            localStorage.setItem('atliq_activities', JSON.stringify([]));
+            updateBellUI();
+        }
+
+        function updateBellUI() {
+            let activities = [];
+            try {
+                activities = JSON.parse(localStorage.getItem('atliq_activities')) || [];
+            } catch (e) {
+                activities = [];
+            }
+
+            const badge = document.getElementById('bell-badge');
+            if (badge) {
+                badge.style.display = activities.length > 0 ? 'block' : 'none';
+            }
+
+            const body = document.getElementById('bell-dropdown-body');
+            if (!body) return;
+
+            if (activities.length === 0) {
+                body.innerHTML = '<div class="bell-empty-state">No recent activity</div>';
+                return;
+            }
+
+            body.innerHTML = activities.map(act => `
+                <div class="bell-item">
+                    <span style="color: ${act.status === 'success' ? '#10b981' : '#ef4444'}; font-weight: 500;">
+                        ${act.text}
+                    </span>
+                    <span class="bell-item-time">${act.time}</span>
+                </div>
+            `).join('');
         }
 
         // Theme Toggle Logic
@@ -1466,6 +2030,173 @@
                 if (sunIcon) sunIcon.style.display = 'block';
                 if (moonIcon) moonIcon.style.display = 'none';
             }
+            renderCharts();
+        }
+
+        // Chart.js Aggregation & Rendering
+        function renderCharts() {
+            if (activeTab !== 'overview') return;
+            
+            const isLight = document.body.classList.contains('light-theme');
+            const textColor = isLight ? '#475569' : '#94a3b8';
+            const gridColor = isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.06)';
+            
+            // 1. Tickets by Status Bar Chart
+            const tickets = window.rawData.tickets || [];
+            const ticketCounts = { 'Open': 0, 'In Progress': 0, 'Closed': 0 };
+            tickets.forEach(t => {
+                const s = t.status;
+                if (ticketCounts[s] !== undefined) {
+                    ticketCounts[s]++;
+                }
+            });
+            
+            const ticketsCtx = document.getElementById('ticketsChart');
+            if (ticketsCtx) {
+                if (ticketsChartInstance) ticketsChartInstance.destroy();
+                ticketsChartInstance = new Chart(ticketsCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Open', 'In Progress', 'Closed'],
+                        datasets: [{
+                            label: 'Tickets',
+                            data: [ticketCounts['Open'], ticketCounts['In Progress'], ticketCounts['Closed']],
+                            backgroundColor: [
+                                'rgba(59, 130, 246, 0.7)',
+                                'rgba(245, 158, 11, 0.7)',
+                                'rgba(16, 185, 129, 0.7)'
+                            ],
+                            borderColor: [
+                                'rgb(59, 130, 246)',
+                                'rgb(245, 158, 11)',
+                                'rgb(16, 185, 129)'
+                            ],
+                            borderWidth: 1.5,
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: { padding: 10 }
+                        },
+                        scales: {
+                            x: {
+                                grid: { color: gridColor },
+                                ticks: { color: textColor }
+                            },
+                            y: {
+                                grid: { color: gridColor },
+                                ticks: { color: textColor, stepSize: 1 }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // 2. Leave Balance Distribution Pie Chart
+            const leave = window.rawData.leave || [];
+            const employees = window.rawData.employees || [];
+            const empMap = {};
+            employees.forEach(e => { empMap[e.emp_id] = e.name; });
+            
+            const leaveLabels = leave.map(l => empMap[l.emp_id] || l.emp_id);
+            const leaveData = leave.map(l => l.balance);
+            
+            const leaveCtx = document.getElementById('leaveChart');
+            if (leaveCtx) {
+                if (leaveChartInstance) leaveChartInstance.destroy();
+                leaveChartInstance = new Chart(leaveCtx, {
+                    type: 'pie',
+                    data: {
+                        labels: leaveLabels,
+                        datasets: [{
+                            data: leaveData,
+                            backgroundColor: [
+                                'rgba(59, 130, 246, 0.7)',
+                                'rgba(139, 92, 246, 0.7)',
+                                'rgba(16, 185, 129, 0.7)',
+                                'rgba(249, 115, 22, 0.7)',
+                                'rgba(236, 72, 153, 0.7)',
+                                'rgba(20, 184, 166, 0.7)',
+                                'rgba(107, 114, 128, 0.7)',
+                                'rgba(234, 179, 8, 0.7)'
+                            ],
+                            borderWidth: 1.5,
+                            borderColor: isLight ? '#ffffff' : '#0f172a'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'right',
+                                labels: { color: textColor, font: { size: 10 } }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // 3. Meetings Scheduled (Last 7 Days) Line Chart
+            const meetings = window.rawData.meetings || [];
+            const last7DaysLabels = [];
+            const meetingsData = [];
+            
+            for (let i = 6; i >= 0; i--) {
+                const d = new Date();
+                d.setDate(d.getDate() - i);
+                const dateStr = d.toISOString().split('T')[0];
+                
+                const formattedLabel = d.toLocaleDateString([], { weekday: 'short', day: 'numeric' });
+                last7DaysLabels.push(formattedLabel);
+                
+                const count = meetings.filter(m => m.date && m.date.startsWith(dateStr)).length;
+                meetingsData.push(count);
+            }
+            
+            const meetingsCtx = document.getElementById('meetingsChart');
+            if (meetingsCtx) {
+                if (meetingsChartInstance) meetingsChartInstance.destroy();
+                meetingsChartInstance = new Chart(meetingsCtx, {
+                    type: 'line',
+                    data: {
+                        labels: last7DaysLabels,
+                        datasets: [{
+                            label: 'Meetings Scheduled',
+                            data: meetingsData,
+                            borderColor: '#8b5cf6',
+                            backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.3,
+                            pointBackgroundColor: '#8b5cf6',
+                            pointHoverRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: { padding: 10 }
+                        },
+                        scales: {
+                            x: {
+                                grid: { color: gridColor },
+                                ticks: { color: textColor }
+                            },
+                            y: {
+                                grid: { color: gridColor },
+                                ticks: { color: textColor, stepSize: 1 }
+                            }
+                        }
+                    }
+                });
+            }
         }
 
         // Get Name Initials for Avatars
@@ -1476,10 +2207,72 @@
             return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
         }
 
-        // Generate customized premium tables
+        // Generate customized premium tables with SVG empty states and clickable rows
         function generateTableHtml(data, type) {
             if (!data || data.length === 0) {
-                return '<div class="empty-state">No records found.</div>';
+                if (type === 'employees') {
+                    return `
+                        <div class="empty-state">
+                            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity: 0.6; margin-bottom: 1rem;">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="9" cy="7" r="4"></circle>
+                                <line x1="17" y1="8" x2="21" y2="12"></line>
+                                <line x1="21" y1="8" x2="17" y2="12"></line>
+                            </svg>
+                            <p style="font-weight: 500; font-size: 0.95rem;">No Employees Found</p>
+                            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem;">Try onboarding a new employee through the chat assistant.</p>
+                        </div>
+                    `;
+                } else if (type === 'leave') {
+                    return `
+                        <div class="empty-state">
+                            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity: 0.6; margin-bottom: 1rem;">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="16" y1="2" x2="16" y2="6"></line>
+                                <line x1="8" y1="2" x2="8" y2="6"></line>
+                                <line x1="3" y1="10" x2="21" y2="10"></line>
+                                <line x1="9" y1="14" x2="15" y2="14"></line>
+                                <line x1="9" y1="18" x2="13" y2="18"></line>
+                            </svg>
+                            <p style="font-weight: 500; font-size: 0.95rem;">No Leave Balances</p>
+                            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem;">Add a leave balance using the form or apply leave for an employee.</p>
+                        </div>
+                    `;
+                } else if (type === 'tickets') {
+                    return `
+                        <div class="empty-state">
+                            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity: 0.6; margin-bottom: 1rem;">
+                                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                                <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                                <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                            </svg>
+                            <p style="font-weight: 500; font-size: 0.95rem;">No Support Tickets</p>
+                            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem;">All systems go! No active support or equipment issues logged.</p>
+                        </div>
+                    `;
+                } else if (type === 'meetings') {
+                    return `
+                        <div class="empty-state">
+                            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity: 0.6; margin-bottom: 1rem;">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12 6 12 12 16 14"></polyline>
+                            </svg>
+                            <p style="font-weight: 500; font-size: 0.95rem;">No Meetings Scheduled</p>
+                            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem;">No meetings scheduled for the upcoming period.</p>
+                        </div>
+                    `;
+                } else {
+                    return `
+                        <div class="empty-state">
+                            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity: 0.6; margin-bottom: 1rem;">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="12" y1="8" x2="12" y2="12"></line>
+                                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                            </svg>
+                            <p style="font-weight: 500; font-size: 0.95rem;">No Records Found</p>
+                        </div>
+                    `;
+                }
             }
             
             const columns = Object.keys(data[0]);
@@ -1491,7 +2284,8 @@
             html += '</tr></thead><tbody>';
             
             data.forEach((row, idx) => {
-                html += `<tr style="animation: fadeInSlideUp 0.3s ease-out forwards; animation-delay: ${idx * 0.02}s; opacity: 0; transform: translateY(8px);">`;
+                const clickAttr = type === 'employees' ? `onclick="openEmployeeProfile('${row.emp_id}')" style="cursor: pointer; animation: fadeInSlideUp 0.3s ease-out forwards; animation-delay: ${idx * 0.02}s; opacity: 0; transform: translateY(8px);"` : `style="animation: fadeInSlideUp 0.3s ease-out forwards; animation-delay: ${idx * 0.02}s; opacity: 0; transform: translateY(8px);"`;
+                html += `<tr ${clickAttr}>`;
                 columns.forEach(col => {
                     let val = row[col];
                     if (val === null || val === undefined) val = '-';
@@ -1670,6 +2464,9 @@
                 }
                 
                 await fetchStats();
+                if (activeTab === 'overview') {
+                    renderCharts();
+                }
                 countdown = 30; // Reset countdown
             } catch (err) {
                 console.error("Error fetching data:", err);
@@ -1692,15 +2489,227 @@
                 const data = await res.json();
                 
                 if (res.ok) {
-                    showNotification(data.message, 'success');
+                    logActivity('add_leave_balance', 'success', data.message);
                     document.getElementById('emp_id').value = '';
                     fetchData(); // refresh immediately
                 } else {
-                    showNotification(data.detail || 'An error occurred', 'error');
+                    logActivity('add_leave_balance', 'error', data.detail || 'An error occurred');
                 }
             } catch (err) {
-                showNotification('Network error', 'error');
+                logActivity('add_leave_balance', 'error', 'Network error');
             }
+        }
+
+        // Employee Profile Modal Handlers
+        async function openEmployeeProfile(empId) {
+            const modal = document.getElementById('profile-modal');
+            const modalBody = document.getElementById('modal-body');
+            if (!modal || !modalBody) return;
+            
+            // Show modal and loading loader
+            modalBody.innerHTML = `
+                <div style="display: flex; flex-direction: column; gap: 1.5rem; align-items: center; justify-content: center; min-height: 250px;">
+                    <div class="spinner"></div>
+                    <span style="font-size: 0.9rem; color: var(--text-muted);">Loading employee profile...</span>
+                </div>
+            `;
+            modal.style.display = 'flex';
+            setTimeout(() => modal.classList.add('show'), 10);
+            
+            try {
+                const res = await fetch(`/api/employee/${empId}/full`);
+                if (res.ok) {
+                    const data = await res.json();
+                    renderProfileModalContent(data);
+                } else {
+                    const err = await res.json();
+                    modalBody.innerHTML = `
+                        <div style="text-align: center; padding: 2rem;">
+                            <p style="color: #ef4444; font-weight: 600;">Failed to load employee details</p>
+                            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem;">${err.detail || 'Unknown error'}</p>
+                        </div>
+                    `;
+                }
+            } catch(e) {
+                modalBody.innerHTML = `
+                    <div style="text-align: center; padding: 2rem;">
+                        <p style="color: #ef4444; font-weight: 600;">Network error occurred</p>
+                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem;">Could not connect to the API server.</p>
+                    </div>
+                `;
+            }
+        }
+
+        function closeProfileModal() {
+            const modal = document.getElementById('profile-modal');
+            if (!modal) return;
+            modal.classList.remove('show');
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 300);
+        }
+
+        function switchModalTab(e, tabId) {
+            document.querySelectorAll('.modal-tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.modal-tab-content').forEach(content => content.classList.remove('active'));
+            
+            e.currentTarget.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        function renderModalLeavesList(history) {
+            if (history.length === 0) {
+                return `
+                    <div style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity: 0.5; margin-bottom: 0.5rem;">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="16" y1="2" x2="16" y2="6"></line>
+                            <line x1="8" y1="2" x2="8" y2="6"></line>
+                            <line x1="3" y1="10" x2="21" y2="10"></line>
+                        </svg>
+                        <p style="font-size: 0.85rem;">No leave history recorded.</p>
+                    </div>
+                `;
+            }
+            return `
+                <div style="max-height: 250px; overflow-y: auto;">
+                    ${history.map(item => `
+                        <div class="modal-list-item">
+                            <span>Leave Date: <strong>${item.leave_date}</strong></span>
+                            <span class="badge badge-closed" style="font-size: 0.7rem;">Request ID: ${item.request_id}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function renderModalTicketsList(tickets) {
+            if (tickets.length === 0) {
+                return `
+                    <div style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity: 0.5; margin-bottom: 0.5rem;">
+                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                        </svg>
+                        <p style="font-size: 0.85rem;">No tickets logged.</p>
+                    </div>
+                `;
+            }
+            return `
+                <div style="max-height: 250px; overflow-y: auto;">
+                    ${tickets.map(t => {
+                        let badgeClass = 'badge-pending';
+                        if (t.status.toLowerCase() === 'open') badgeClass = 'badge-open';
+                        else if (t.status.toLowerCase() === 'closed') badgeClass = 'badge-closed';
+                        
+                        return `
+                            <div class="modal-list-item">
+                                <div style="display: flex; flex-direction: column; gap: 0.1rem;">
+                                    <strong>${t.item}</strong>
+                                    <span style="font-size: 0.75rem; color: var(--text-muted);">${t.reason}</span>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <span class="badge ${badgeClass}" style="font-size: 0.7rem;">${t.status}</span>
+                                    <span style="font-size: 0.7rem; color: var(--text-muted);">${new Date(t.created_at).toLocaleDateString()}</span>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        }
+
+        function renderModalMeetingsList(meetings) {
+            if (meetings.length === 0) {
+                return `
+                    <div style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity: 0.5; margin-bottom: 0.5rem;">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                        <p style="font-size: 0.85rem;">No meetings scheduled.</p>
+                    </div>
+                `;
+            }
+            return `
+                <div style="max-height: 250px; overflow-y: auto;">
+                    ${meetings.map(m => {
+                        let formattedDate = m.date;
+                        try {
+                            const dt = new Date(m.date);
+                            if (!isNaN(dt)) {
+                                formattedDate = dt.toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' });
+                            }
+                        } catch(e){}
+                        return `
+                            <div class="modal-list-item">
+                                <span>Topic: <strong>${m.topic}</strong></span>
+                                <span style="font-size: 0.75rem; color: var(--text-muted);">${formattedDate}</span>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        }
+
+        function renderProfileModalContent(data) {
+            const emp = data.employee;
+            const initials = getInitials(emp.name);
+            const ticketsCount = data.tickets.filter(t => t.status.toLowerCase() !== 'closed').length;
+            const meetingsCount = data.meetings.length;
+            const leaveHistory = data.leave_history || [];
+            const tickets = data.tickets || [];
+            const meetings = data.meetings || [];
+            
+            const modalBody = document.getElementById('modal-body');
+            
+            modalBody.innerHTML = `
+                <!-- Profile Header -->
+                <div class="modal-profile-header" style="display: flex; align-items: center; gap: 1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1.5rem; margin-bottom: 1.5rem;">
+                    <div class="avatar" style="width: 64px; height: 64px; font-size: 1.5rem; font-weight: 700;">${initials}</div>
+                    <div style="flex: 1;">
+                        <h2 style="font-family: 'Outfit', sans-serif; font-size: 1.5rem; font-weight: 700; margin-bottom: 0.25rem;">${emp.name}</h2>
+                        <div style="display: flex; gap: 1rem; flex-wrap: wrap; font-size: 0.85rem; color: var(--text-muted);">
+                            <span><strong>ID:</strong> ${emp.emp_id}</span>
+                            <span><strong>Email:</strong> ${emp.email}</span>
+                            <span><strong>Manager ID:</strong> ${emp.manager_id || 'None'}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Mini Stats Grid -->
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
+                    <div class="modal-stat-card" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 12px; padding: 1rem; text-align: center;">
+                        <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 0.25rem;">Leave Balance</div>
+                        <div style="font-size: 1.35rem; font-weight: 700; color: #8b5cf6;">${data.leave_balance} Days</div>
+                    </div>
+                    <div class="modal-stat-card" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 12px; padding: 1rem; text-align: center;">
+                        <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 0.25rem;">Active Tickets</div>
+                        <div style="font-size: 1.35rem; font-weight: 700; color: #f97316;">${ticketsCount}</div>
+                    </div>
+                    <div class="modal-stat-card" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 12px; padding: 1rem; text-align: center;">
+                        <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 0.25rem;">Meetings Scheduled</div>
+                        <div style="font-size: 1.35rem; font-weight: 700; color: #3b82f6;">${meetingsCount}</div>
+                    </div>
+                </div>
+                
+                <!-- Modal Tab Navigation -->
+                <div style="display: flex; gap: 0.5rem; border-bottom: 1px solid var(--border-color); margin-bottom: 1rem;">
+                    <button class="modal-tab-btn active" onclick="switchModalTab(event, 'modal-tab-leaves')">Leaves (${leaveHistory.length})</button>
+                    <button class="modal-tab-btn" onclick="switchModalTab(event, 'modal-tab-tickets')">Tickets (${tickets.length})</button>
+                    <button class="modal-tab-btn" onclick="switchModalTab(event, 'modal-tab-meetings')">Meetings (${meetings.length})</button>
+                </div>
+                
+                <!-- Modal Tab Content -->
+                <div id="modal-tab-leaves" class="modal-tab-content active">
+                    ${renderModalLeavesList(leaveHistory)}
+                </div>
+                <div id="modal-tab-tickets" class="modal-tab-content">
+                    ${renderModalTicketsList(tickets)}
+                </div>
+                <div id="modal-tab-meetings" class="modal-tab-content">
+                    ${renderModalMeetingsList(meetings)}
+                </div>
+            `;
         }
 
         // Auto Refresh Timer
@@ -1740,7 +2749,6 @@
                     bubble.textContent = msg.content;
                     container.appendChild(bubble);
                 } else if (msg.role === 'assistant') {
-                    // Filter out tool calls JSON strings from visual interface to keep it clean
                     if (msg.content.trim().startsWith('[') || msg.content.trim().startsWith('{')) {
                         return; 
                     }
@@ -1753,7 +2761,6 @@
         }
 
         function formatMessageContent(text) {
-            // Replaces newlines with <br> and formats lists slightly
             return text
                 .replace(/\n/g, '<br>')
                 .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
@@ -1774,6 +2781,10 @@
             const input = document.getElementById('chat-input');
             const message = input.value.trim();
             if (!message) return;
+
+            // Show chat spinner overlay
+            const spinnerOverlay = document.getElementById('chat-spinner-overlay');
+            if (spinnerOverlay) spinnerOverlay.classList.add('show');
 
             // Add user message
             chatMessages.push({ role: 'user', content: message });
@@ -1797,8 +2808,6 @@
             scrollChatToBottom();
 
             try {
-                // Prepare history to send to backend API
-                // Keep last 10 messages for context, format appropriately
                 const historyToSend = chatMessages.slice(-10).map(m => ({
                     role: m.role,
                     content: m.content
@@ -1813,25 +2822,28 @@
                     })
                 });
 
-                // Remove typing indicator
+                // Remove typing indicator and hide spinner
                 const tb = document.getElementById('typing-bubble');
                 if (tb) tb.remove();
+                if (spinnerOverlay) spinnerOverlay.classList.remove('show');
 
                 if (res.ok) {
                     const data = await res.json();
                     
-                    // Replace/sync our conversation state history
-                    // The backend returns the updated history list
                     if (data.history) {
-                        // Keep our copy, but merge and sync the new responses
                         chatMessages = data.history;
                         sessionStorage.setItem('atliq_chat_history', JSON.stringify(chatMessages));
                     }
                     
+                    // Log any executed tools
+                    if (data.actions && data.actions.length > 0) {
+                        data.actions.forEach(act => {
+                            logActivity(act.tool, act.status, act.result);
+                        });
+                    }
+                    
                     renderChatHistory();
                     scrollChatToBottom();
-                    
-                    // Trigger a fast data refresh in case tools modified database state
                     fetchData();
                 } else {
                     const errData = await res.json();
@@ -1840,6 +2852,7 @@
             } catch (err) {
                 const tb = document.getElementById('typing-bubble');
                 if (tb) tb.remove();
+                if (spinnerOverlay) spinnerOverlay.classList.remove('show');
                 addAssistantMessage('Network error. Failed to reach the assistant API.');
             }
         }
@@ -1851,9 +2864,43 @@
             scrollChatToBottom();
         }
 
-        // Initialize Theme and Data on window load
+        function confirmNewChat() {
+            const hasMessages = chatMessages.length > 1;
+            if (hasMessages) {
+                if (confirm("Are you sure you want to clear the current chat history and start a new conversation?")) {
+                    clearChatSession(false);
+                }
+            } else {
+                clearChatSession(false);
+            }
+        }
+
+        function clearChatSession(autoRefreshed = false) {
+            chatMessages = [
+                { role: 'assistant', content: 'Hello! I am your AI HR assistant. I can help onboard new employees, check balances, schedule meetings, or file/update support tickets. How can I help you today?' }
+            ];
+            if (autoRefreshed) {
+                chatMessages.push({ role: 'system', content: 'Session refreshed' });
+            }
+            sessionStorage.setItem('atliq_chat_history', JSON.stringify(chatMessages));
+            renderChatHistory();
+            scrollChatToBottom();
+            sessionStartTime = Date.now();
+        }
+
+        // Initialize Theme, Bell, and Data on window load
         initTheme();
+        updateBellUI();
         fetchData();
+
+        // Close dropdown when clicking outside
+        window.addEventListener('click', function(e) {
+            const dropdown = document.getElementById('bell-dropdown');
+            const bellBtn = document.getElementById('bell-btn');
+            if (dropdown && dropdown.style.display === 'flex' && !dropdown.contains(e.target) && !bellBtn.contains(e.target)) {
+                dropdown.style.display = 'none';
+            }
+        });
     </script>
 </body>
 </html>

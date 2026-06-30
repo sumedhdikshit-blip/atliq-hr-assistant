@@ -109,6 +109,25 @@ def get_tickets():
 def get_meetings():
     return fetch_data("SELECT * FROM meetings")
 
+@app.get("/api/employee/{emp_id}/full")
+def get_employee_full_details(emp_id: str):
+    employee = fetch_one("SELECT * FROM employees WHERE emp_id = ?", (emp_id,))
+    if not employee:
+        raise HTTPException(status_code=404, detail="Employee not found")
+    
+    leave_balance = fetch_one("SELECT balance FROM leave_balances WHERE emp_id = ?", (emp_id,))
+    leave_history = fetch_data("SELECT * FROM leave_history WHERE emp_id = ? ORDER BY leave_date DESC", (emp_id,))
+    tickets = fetch_data("SELECT * FROM tickets WHERE emp_id = ? ORDER BY created_at DESC", (emp_id,))
+    meetings = fetch_data("SELECT * FROM meetings WHERE emp_id = ? ORDER BY date DESC", (emp_id,))
+    
+    return {
+        "employee": employee,
+        "leave_balance": leave_balance["balance"] if leave_balance else 0,
+        "leave_history": leave_history,
+        "tickets": tickets,
+        "meetings": meetings
+    }
+
 @app.get("/api/stats")
 def get_stats():
     total_emp = fetch_one("SELECT COUNT(*) as count FROM employees")['count']
@@ -170,24 +189,27 @@ def chat_endpoint(req: ChatRequest):
     except Exception as e:
         # Not a JSON action, treat as direct conversational assistant reply
         history.append({"role": "assistant", "content": resp_content})
-        return {"result": resp_content, "history": history}
+        return {"result": resp_content, "history": history, "actions": []}
 
     # If actions list is empty, treat as direct conversational reply
     if not actions:
         history.append({"role": "assistant", "content": resp_content})
-        return {"result": resp_content, "history": history}
+        return {"result": resp_content, "history": history, "actions": []}
 
     # Add the JSON tool call command to history
     history.append({"role": "assistant", "content": resp_content})
 
     results = []
+    actions_run = []
     for act in actions:
         tool, params = act.get("tool"), act.get("params", {})
         try:
             res = execute_tool(tool, params)
             results.append(f"Tool {tool} output:\n{res}")
+            actions_run.append({"tool": tool, "params": params, "status": "success", "result": str(res)})
         except Exception as e:
             results.append(f"Tool {tool} failed:\n{str(e)}")
+            actions_run.append({"tool": tool, "params": params, "status": "error", "result": str(e)})
             
     final_output = "\n\n".join(results)
     history.append({"role": "system", "content": f"Execution result: {final_output}"})
@@ -207,7 +229,7 @@ def chat_endpoint(req: ChatRequest):
         final_reply = f"I have executed the requested actions. Here is the output:\n{final_output}"
         
     history.append({"role": "assistant", "content": final_reply})
-    return {"result": final_reply, "history": history}
+    return {"result": final_reply, "history": history, "actions": actions_run}
 
 @app.get("/", response_class=HTMLResponse)
 def serve_dashboard():
