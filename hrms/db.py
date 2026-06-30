@@ -58,7 +58,18 @@ def init_db():
     )
     ''')
     
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        email TEXT UNIQUE NOT NULL,
+        password_hash TEXT NOT NULL,
+        role TEXT CHECK(role IN ('admin', 'hr', 'employee')) NOT NULL,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )
+    ''')
+    
     conn.commit()
     conn.close()
 
 init_db()
+
